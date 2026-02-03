@@ -1,19 +1,38 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Settings, Volume2, Monitor, Subtitles, Moon, Gauge, SlidersHorizontal } from 'lucide-react';
+import { Settings, Volume2, Monitor, Subtitles, Moon, Gauge, SlidersHorizontal, Languages } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SettingsMenuItem, SettingsToggleItem } from './SettingsMenuItem';
 import { SettingsSubmenuHeader, SettingsSubmenuItem } from './SettingsSubmenu';
+import { triggerSelectionHaptic } from './haptics';
+
+export interface AudioTrack {
+  language: string;
+  role?: string;
+  label?: string;
+}
+
+export interface TextTrack {
+  language: string;
+  role?: string;
+  label?: string;
+}
 
 interface VideoSettingsMenuProps {
   stableVolume: boolean;
   onStableVolumeChange: (enabled: boolean) => void;
   ambientMode?: boolean;
   onAmbientModeChange?: (enabled: boolean) => void;
-  availableTextTracks: any[];
+  // Text/Subtitle tracks
+  availableTextTracks: TextTrack[];
   currentTextTrack: string;
   onTextTrackChange: (language: string, role?: string) => void;
+  // Audio tracks
+  availableAudioTracks?: AudioTrack[];
+  currentAudioTrack?: string | null;
+  onAudioTrackChange?: (language: string, role?: string) => void;
+  // Other settings
   sleepTimer: number;
   onSleepTimerChange: (minutes: number) => void;
   playbackSpeed: number;
@@ -27,7 +46,7 @@ interface VideoSettingsMenuProps {
   onOpenChange?: (isOpen: boolean) => void;
 }
 
-type MenuView = 'main' | 'subtitles' | 'sleepTimer' | 'playbackSpeed' | 'quality';
+type MenuView = 'main' | 'subtitles' | 'audio' | 'sleepTimer' | 'playbackSpeed' | 'quality';
 
 const SPEED_OPTIONS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
 const SLEEP_OPTIONS = [0, 15, 30, 45, 60, 90, 120];
@@ -47,6 +66,34 @@ const slideVariants = {
   }),
 };
 
+// Helper to get display label for audio/text track
+const getTrackLabel = (track: AudioTrack | TextTrack): string => {
+  if (track.label) return track.label;
+  
+  // Map common language codes to readable names
+  const languageNames: Record<string, string> = {
+    'en': 'English',
+    'km': 'ខ្មែរ',
+    'th': 'ไทย',
+    'zh': '中文',
+    'ja': '日本語',
+    'ko': '한국어',
+    'vi': 'Tiếng Việt',
+    'es': 'Español',
+    'fr': 'Français',
+    'de': 'Deutsch',
+    'pt': 'Português',
+    'ru': 'Русский',
+    'ar': 'العربية',
+    'hi': 'हिन्दी',
+    'id': 'Indonesia',
+    'ms': 'Melayu',
+    'fil': 'Filipino',
+  };
+  
+  return languageNames[track.language] || track.language.toUpperCase();
+};
+
 export const VideoSettingsMenu = ({
   stableVolume,
   onStableVolumeChange,
@@ -55,6 +102,9 @@ export const VideoSettingsMenu = ({
   availableTextTracks,
   currentTextTrack,
   onTextTrackChange,
+  availableAudioTracks = [],
+  currentAudioTrack = null,
+  onAudioTrackChange,
   sleepTimer,
   onSleepTimerChange,
   playbackSpeed,
@@ -78,7 +128,6 @@ export const VideoSettingsMenu = ({
     setIsOpen(open);
     onOpenChange?.(open);
     if (!open) {
-      // Reset to main menu after close animation
       setTimeout(() => setCurrentView('main'), 200);
     }
   }, [onOpenChange]);
@@ -130,11 +179,18 @@ export const VideoSettingsMenu = ({
   }, []);
 
   const toggleMenu = useCallback(() => {
+    triggerSelectionHaptic();
     handleOpenChange(!isOpen);
   }, [isOpen, handleOpenChange]);
 
   const getQualityLabel = () => autoQualityEnabled ? `Auto (${currentQuality})` : currentQuality;
   const getSpeedLabel = () => playbackSpeed === 1 ? 'Normal' : `${playbackSpeed}x`;
+  
+  const getAudioLabel = () => {
+    if (!currentAudioTrack || availableAudioTracks.length === 0) return 'Default';
+    const track = availableAudioTracks.find(t => t.language === currentAudioTrack);
+    return track ? getTrackLabel(track) : currentAudioTrack;
+  };
 
   const renderMainMenu = () => (
     <div className="py-1">
@@ -151,6 +207,17 @@ export const VideoSettingsMenu = ({
           label="Ambient Mode"
           checked={ambientMode}
           onCheckedChange={onAmbientModeChange}
+        />
+      )}
+
+      {/* Audio Track Selector */}
+      {availableAudioTracks.length > 1 && onAudioTrackChange && (
+        <SettingsMenuItem
+          icon={Languages}
+          label="Audio"
+          value={getAudioLabel()}
+          onClick={() => navigateToSubmenu('audio')}
+          hasSubmenu
         />
       )}
 
@@ -192,6 +259,25 @@ export const VideoSettingsMenu = ({
     </div>
   );
 
+  const renderAudioMenu = () => (
+    <div>
+      <SettingsSubmenuHeader title="Audio" onBack={handleBack} />
+      <div className="py-1 max-h-[240px] overflow-y-auto overscroll-contain">
+        {availableAudioTracks.map((track, idx) => (
+          <SettingsSubmenuItem
+            key={`${track.language}-${track.role || idx}`}
+            label={getTrackLabel(track)}
+            isSelected={currentAudioTrack === track.language}
+            onClick={() => { 
+              onAudioTrackChange?.(track.language, track.role); 
+              handleBack(); 
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+
   const renderSubtitlesMenu = () => (
     <div>
       <SettingsSubmenuHeader title="Subtitles" onBack={handleBack} />
@@ -204,7 +290,7 @@ export const VideoSettingsMenu = ({
         {availableTextTracks.map((track, idx) => (
           <SettingsSubmenuItem
             key={idx}
-            label={track.language || `Track ${idx + 1}`}
+            label={getTrackLabel(track)}
             isSelected={currentTextTrack === track.language}
             onClick={() => { onTextTrackChange(track.language, track.role); handleBack(); }}
           />
@@ -270,6 +356,7 @@ export const VideoSettingsMenu = ({
 
   const renderContent = () => {
     switch (currentView) {
+      case 'audio': return renderAudioMenu();
       case 'subtitles': return renderSubtitlesMenu();
       case 'sleepTimer': return renderSleepTimerMenu();
       case 'playbackSpeed': return renderPlaybackSpeedMenu();

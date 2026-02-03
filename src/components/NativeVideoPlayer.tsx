@@ -201,6 +201,9 @@ const NativeVideoPlayer = ({
   const [isSettingsMenuOpen, setIsSettingsMenuOpen] = useState(false);
   const [sleepTimer, setSleepTimer] = useState(0);
   const [currentTextTrack, setCurrentTextTrack] = useState('off');
+  const [availableTextTracks, setAvailableTextTracks] = useState<any[]>([]);
+  const [currentAudioTrack, setCurrentAudioTrack] = useState<string | null>(null);
+  const [availableAudioTracks, setAvailableAudioTracks] = useState<any[]>([]);
   const [currentQuality, setCurrentQuality] = useState('auto');
   const [autoQualityEnabled, setAutoQualityEnabled] = useState(true);
   const [availableQualities, setAvailableQualities] = useState<string[]>([]);
@@ -485,6 +488,8 @@ const NativeVideoPlayer = ({
     isLoading: shakaLoading,
     setQuality: setShakaQuality,
     setAutoQuality: setShakaAutoQuality,
+    setAudioTrack: setShakaAudioTrack,
+    setTextTrack: setShakaTextTrack,
   } = useNativeShakaPlayer({
     videoRef,
     autoQualityEnabled,
@@ -492,6 +497,15 @@ const NativeVideoPlayer = ({
       if (sourceType === 'hls') {
         setAvailableQualities(qualities);
       }
+    },
+    onAudioTracksLoaded: (tracks) => {
+      setAvailableAudioTracks(tracks);
+      if (tracks.length > 0 && !currentAudioTrack) {
+        setCurrentAudioTrack(tracks[0].language);
+      }
+    },
+    onTextTracksLoaded: (tracks) => {
+      setAvailableTextTracks(tracks);
     },
     onError: (error) => {
       // Log full Shaka error detail (severity/category/code/data) so we can diagnose e.g. 7000 (network/manifest).
@@ -1136,9 +1150,19 @@ const NativeVideoPlayer = ({
     }
   }, []);
 
-  const handleTextTrackChange = useCallback((language: string) => {
+  const handleTextTrackChange = useCallback((language: string, role?: string) => {
     setCurrentTextTrack(language);
-  }, []);
+    if (language === 'off') {
+      setShakaTextTrack?.('off');
+    } else {
+      setShakaTextTrack?.(language, role);
+    }
+  }, [setShakaTextTrack]);
+
+  const handleAudioTrackChange = useCallback((language: string, role?: string) => {
+    setCurrentAudioTrack(language);
+    setShakaAudioTrack?.(language, role);
+  }, [setShakaAudioTrack]);
 
   const videoPoster = contentBackdrop || '';
 
@@ -1684,9 +1708,12 @@ const NativeVideoPlayer = ({
                   <VideoSettingsMenu
                     stableVolume={stableVolume}
                     onStableVolumeChange={setStableVolume}
-                    availableTextTracks={[]}
+                    availableTextTracks={availableTextTracks}
                     currentTextTrack={currentTextTrack}
                     onTextTrackChange={handleTextTrackChange}
+                    availableAudioTracks={availableAudioTracks}
+                    currentAudioTrack={currentAudioTrack}
+                    onAudioTrackChange={handleAudioTrackChange}
                     sleepTimer={sleepTimer}
                     onSleepTimerChange={setSleepTimer}
                     playbackSpeed={playbackSpeed}
