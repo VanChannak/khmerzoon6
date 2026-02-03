@@ -234,7 +234,7 @@ const MobileHeroBanner = ({ page = 'home' }: MobileHeroBannerProps) => {
     <div 
       className="relative w-full overflow-hidden border-b border-white dark:border-transparent -mt-[env(safe-area-inset-top)]"
       style={{ 
-        height: 'calc(90vh + env(safe-area-inset-top))',
+        height: 'calc(60vh + env(safe-area-inset-top))',
         paddingTop: 'env(safe-area-inset-top)'
       }}
       onMouseEnter={() => setIsPaused(true)}
