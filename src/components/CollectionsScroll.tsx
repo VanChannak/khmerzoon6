@@ -85,7 +85,7 @@ const CollectionsScroll = () => {
               <div className="flex gap-2 md:gap-3 lg:gap-4 px-2 md:px-0">
                 {collections.map(collection => {
                 const slug = collection.name.toLowerCase().replace(/\s+/g, '-');
-                return <NavLink key={collection.id} to={`/collections/${slug}`} className="flex-shrink-0 w-32 sm:w-40 md:w-48 lg:w-56 xl:w-64 animate-fade-in">
+                return <NavLink key={collection.id} to={`/collections/${slug}`} className="flex-shrink-0 w-[140px] sm:w-[160px] md:w-[180px] lg:w-56 xl:w-64 animate-fade-in">
                       <Card className="hover:shadow-xl transition-all duration-300 cursor-pointer border-border/50 hover:border-primary overflow-hidden bg-card/40 backdrop-blur-md">
                         <CardContent className="p-2 md:p-3 lg:p-4 flex flex-col">
                           <div className="flex items-center gap-1.5 md:gap-2 mb-1.5 md:mb-2">

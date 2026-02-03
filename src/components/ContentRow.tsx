@@ -173,7 +173,7 @@ const ContentRow = ({ title, category, contentType, className }: ContentRowProps
           };
           
           return (
-            <div key={item.id} className="flex-shrink-0 w-[200px] md:w-[240px] transition-transform duration-300 ease-out">
+            <div key={item.id} className="flex-shrink-0 w-[160px] sm:w-[180px] md:w-[200px] lg:w-[220px] xl:w-[240px] transition-transform duration-300 ease-out">
               <MovieCard
                 id={item.id}
                 title={item.title}
