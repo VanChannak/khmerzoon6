@@ -348,11 +348,11 @@ const CelebrityPage = () => {
           <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-background via-background/60 to-transparent" />
         </div>
 
-        {/* Back Button - Fixed on top */}
+        {/* Back Button - Fixed below header */}
         <Button
           variant="ghost"
           size="icon"
-          className="absolute top-4 left-4 z-50 bg-background/50 backdrop-blur-sm rounded-full"
+          className="absolute top-16 left-4 z-50 bg-background/50 backdrop-blur-sm rounded-full"
           onClick={() => navigate(-1)}
         >
           <ArrowLeft className="h-5 w-5" />
