@@ -364,7 +364,7 @@ const CelebrityPage = () => {
           <div className="h-[60vh] pointer-events-none" />
 
           {/* Content card with background that slides over image */}
-          <div className="bg-background/80 backdrop-blur-sm rounded-t-3xl px-4 pt-6 pb-8 min-h-[50vh] shadow-[0_-10px_40px_rgba(0,0,0,0.3)]">
+          <div className="bg-background/5 backdrop-blur-sm rounded-t-3xl px-4 pt-6 pb-8 min-h-[50vh] shadow-[0_-10px_40px_rgba(0,0,0,0.3)]">
               {/* Name */}
               <h1 className="text-3xl font-bold text-foreground text-center">
                 {displayName}
