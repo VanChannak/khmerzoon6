@@ -33,7 +33,7 @@ import { useSupportUsSettings } from '@/hooks/useSupportUsSettings';
 import { useSubscription } from '@/hooks/useSubscription';
 import { NativeScreenProtection } from '@/utils/nativeScreenProtection';
 import { usePinchToZoom } from '@/hooks/usePinchToZoom';
-import { VideoSettingsMenu } from '@/components/VideoSettingsMenu';
+import { VideoSettingsMenu } from '@/components/video/settings/VideoSettingsMenu';
 import { useNativeShakaPlayer, detectSourceType } from '@/hooks/useNativeShakaPlayer';
 import { useSiteSettings } from '@/contexts/SiteSettingsContext';
 import { useTheme } from '@/contexts/ThemeContext';
