@@ -605,7 +605,8 @@ const [castMembers, setCastMembers] = useState<any[]>([]);
             cast_members!cast_credits_cast_member_id_fkey (
               id,
               name,
-              profile_path
+              profile_path,
+              tmdb_id
             )
           `)
           .eq('tmdb_content_id', tmdbId)
@@ -613,7 +614,7 @@ const [castMembers, setCastMembers] = useState<any[]>([]);
 
         if (castCredits && castCredits.length > 0) {
           const formattedCast = castCredits.map((credit: any) => ({
-            id: credit.id,
+            id: credit.cast_members?.tmdb_id?.toString() || credit.id,
             actor_name: credit.cast_members?.name || 'Unknown',
             character_name: credit.character_name,
             profile_url: credit.cast_members?.profile_path?.startsWith('http') 
