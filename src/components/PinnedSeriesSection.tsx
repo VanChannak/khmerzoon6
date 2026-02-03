@@ -27,11 +27,13 @@ const PinnedSeriesSection = ({ className }: PinnedSeriesSectionProps) => {
   if (isLoading || !pinnedSeries?.length) return null;
 
   return (
-    <div className={cn("py-4", className)}>
-      <div className="px-4 md:px-[15px]">
+    <div className={cn("py-4 lg:-mt-[15vh] lg:pt-[15vh] relative z-10", className)}>
+      {/* Background that covers the overlap area */}
+      <div className="hidden lg:block absolute inset-0 top-0 bg-gradient-to-b from-transparent via-background/80 to-background pointer-events-none" style={{ height: '15vh' }} />
+      <div className="px-4 md:px-[15px] relative z-10">
         <h2 className="text-xl md:text-2xl font-bold mb-4">📌 Pinned Series</h2>
       </div>
-      <div className="relative">
+      <div className="relative z-10">
         <div className="flex overflow-x-auto gap-3 px-4 md:px-[15px] scrollbar-hide pb-2">
           {pinnedSeries.map((series) => (
             <Link
