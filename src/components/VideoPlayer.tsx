@@ -5,7 +5,7 @@ import {
   PictureInPicture, Server as ServerIcon,
   CreditCard, ListVideo, ChevronLeft, ChevronRight, X, ArrowLeft
 } from "lucide-react";
-import { VideoSettingsMenu } from "./VideoSettingsMenu";
+import { VideoSettingsMenu } from "@/components/video/settings/VideoSettingsMenu";
 // @ts-ignore - Shaka Player types
 import shaka from "shaka-player/dist/shaka-player.compiled";
 import { Button } from "@/components/ui/button";
