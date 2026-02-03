@@ -75,8 +75,10 @@ const CelebrityPage = () => {
   const isTablet = useIsTablet();
   const { isIPad, isIPadPortrait, isIPadLandscape } = useIsIPad();
   
-  // Use mobile layout for: mobile devices OR iPad in portrait mode
-  const useMobileLayout = isMobile || isIPadPortrait;
+  // Use mobile layout for: mobile devices only (not iPad)
+  const useMobileLayout = isMobile && !isIPad;
+  // iPad portrait gets a dedicated layout
+  const useIPadPortraitLayout = isIPadPortrait;
   
   const [person, setPerson] = useState<PersonDetails | null>(null);
   const [loading, setLoading] = useState(true);
@@ -255,7 +257,29 @@ const CelebrityPage = () => {
     );
   };
 
-  // Mobile Loading Skeleton (also for iPad portrait)
+  // iPad Portrait Loading Skeleton
+  if (loading && useIPadPortraitLayout) {
+    return (
+      <div className="min-h-screen bg-background pt-20">
+        <div className="max-w-[700px] mx-auto px-6 py-8">
+          <div className="flex flex-col items-center">
+            <Skeleton className="w-48 aspect-[2/3] rounded-xl" />
+            <Skeleton className="h-8 w-48 mt-4" />
+            <Skeleton className="h-4 w-24 mt-2" />
+            <Skeleton className="h-6 w-20 mt-4" />
+          </div>
+          <Skeleton className="h-40 w-full mt-8" />
+          <div className="grid grid-cols-5 gap-3 mt-8">
+            {[1,2,3,4,5].map(i => (
+              <Skeleton key={i} className="aspect-[2/3] rounded-lg" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Mobile Loading Skeleton
   if (loading && useMobileLayout) {
     return (
       <div className="min-h-screen bg-background">
@@ -330,7 +354,7 @@ const CelebrityPage = () => {
   const filteredCredits = getFilteredCredits();
   const totalCredits = person.total_movie_credits + person.total_tv_credits;
 
-  // Mobile Layout (also used for iPad portrait)
+  // Mobile Layout
   if (useMobileLayout) {
     return (
       <div className="fixed inset-0 overflow-hidden">
@@ -510,6 +534,237 @@ const CelebrityPage = () => {
             </div>
           </div>
         </div>
+    );
+  }
+
+  // iPad Portrait Layout - Card style profile with 5-column filmography grid
+  if (useIPadPortraitLayout) {
+    return (
+      <div className="min-h-screen bg-background pt-20">
+        <div className="max-w-[800px] mx-auto px-6 py-8 pb-24">
+          {/* Back Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="mb-6 -ml-2"
+            onClick={() => navigate(-1)}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+
+          {/* Profile Card Section */}
+          <div className="bg-card rounded-2xl p-6 shadow-lg border border-border">
+            <div className="flex gap-6">
+              {/* Profile Image as Card */}
+              <div className="w-40 flex-shrink-0">
+                <div className="aspect-[2/3] rounded-xl overflow-hidden bg-muted shadow-md">
+                  {profileImage ? (
+                    <img
+                      src={profileImage}
+                      alt={displayName}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <span className="text-5xl text-muted-foreground">
+                        {displayName.charAt(0)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Info Section */}
+              <div className="flex-1 min-w-0">
+                <h1 className="text-2xl font-bold text-foreground">
+                  {displayName}
+                </h1>
+                
+                <div className="flex items-center gap-2 mt-2">
+                  <Badge 
+                    variant="secondary" 
+                    className="bg-primary/20 text-primary border border-primary/30 px-3 py-0.5 text-xs font-semibold uppercase"
+                  >
+                    {person.known_for_department}
+                  </Badge>
+                  <span className="text-sm text-muted-foreground">
+                    <Eye className="h-3 w-3 inline mr-1" />
+                    {Math.round(person.popularity || 0)} views
+                  </span>
+                </div>
+
+                {/* Personal Info Grid */}
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-4 text-sm">
+                  {person.birthday && (
+                    <div>
+                      <p className="text-muted-foreground text-xs">Birthday</p>
+                      <p className="font-medium">
+                        {formatDate(person.birthday)}
+                        {!person.deathday && ` (${calculateAge(person.birthday)})`}
+                      </p>
+                    </div>
+                  )}
+                  {person.place_of_birth && (
+                    <div>
+                      <p className="text-muted-foreground text-xs">Birthplace</p>
+                      <p className="font-medium line-clamp-1">{person.place_of_birth}</p>
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-muted-foreground text-xs">Known Credits</p>
+                    <p className="font-medium">{totalCredits}</p>
+                  </div>
+                  {person.gender && (
+                    <div>
+                      <p className="text-muted-foreground text-xs">Gender</p>
+                      <p className="font-medium">{person.gender === 1 ? 'Female' : person.gender === 2 ? 'Male' : 'Not specified'}</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Social Links */}
+                {person.external_ids && (
+                  <div className="flex items-center gap-2 mt-4">
+                    {person.external_ids.twitter_id && (
+                      <a 
+                        href={`https://twitter.com/${person.external_ids.twitter_id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors"
+                      >
+                        <Twitter className="h-4 w-4" />
+                      </a>
+                    )}
+                    {person.external_ids.instagram_id && (
+                      <a 
+                        href={`https://instagram.com/${person.external_ids.instagram_id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors"
+                      >
+                        <Instagram className="h-4 w-4" />
+                      </a>
+                    )}
+                    {person.external_ids.facebook_id && (
+                      <a 
+                        href={`https://facebook.com/${person.external_ids.facebook_id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors"
+                      >
+                        <Facebook className="h-4 w-4" />
+                      </a>
+                    )}
+                    {person.external_ids.imdb_id && (
+                      <a 
+                        href={`https://imdb.com/name/${person.external_ids.imdb_id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                      </a>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Biography */}
+            {biography && (
+              <div className="mt-6 pt-6 border-t border-border">
+                <h2 className="text-lg font-semibold mb-3">Biography</h2>
+                <div className="text-sm text-muted-foreground leading-relaxed">
+                  <p>{showFullBio ? biography : truncatedBio}</p>
+                  {biography.length > 500 && (
+                    <Button
+                      variant="link"
+                      className="p-0 h-auto mt-2 text-primary font-medium"
+                      onClick={() => setShowFullBio(!showFullBio)}
+                    >
+                      {showFullBio ? (
+                        <>Show Less <ChevronUp className="h-4 w-4 ml-1" /></>
+                      ) : (
+                        <>Read More <ChevronDown className="h-4 w-4 ml-1" /></>
+                      )}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Filmography Section - 5 columns for iPad Portrait */}
+          {filteredCredits.length > 0 && (
+            <div className="mt-8">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-foreground uppercase tracking-wide">
+                  Filmography ({totalCredits})
+                </h2>
+                <Select value={creditFilter} onValueChange={(v) => setCreditFilter(v as any)}>
+                  <SelectTrigger className="w-[110px] h-9 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="movie">Movies</SelectItem>
+                    <SelectItem value="tv">TV Shows</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* 5-column grid for iPad Portrait */}
+              <div className="grid grid-cols-5 gap-3">
+                {filteredCredits.slice(0, 15).map((credit, index) => (
+                  <div
+                    key={`${credit.media_type}-${credit.id}-${index}`}
+                    className="group cursor-pointer"
+                    onClick={() => navigate(`/watch/${credit.media_type === 'movie' ? 'movie' : 'series'}/${credit.id}`)}
+                  >
+                    <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-muted shadow-sm">
+                      {credit.poster_path ? (
+                        <img
+                          src={credit.poster_path}
+                          alt={credit.title}
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-muted">
+                          {credit.media_type === 'movie' ? (
+                            <Film className="h-6 w-6 text-muted-foreground" />
+                          ) : (
+                            <Tv className="h-6 w-6 text-muted-foreground" />
+                          )}
+                        </div>
+                      )}
+                      {credit.vote_average > 0 && (
+                        <div className="absolute top-1.5 right-1.5 bg-background/80 backdrop-blur-sm rounded px-1 py-0.5 flex items-center gap-0.5">
+                          <Star className="h-2.5 w-2.5 fill-primary text-primary" />
+                          <span className="text-[9px] text-foreground font-medium">{credit.vote_average.toFixed(1)}</span>
+                        </div>
+                      )}
+                    </div>
+                    <p className="mt-1.5 text-xs font-medium text-foreground text-center line-clamp-2 group-hover:text-primary transition-colors">
+                      {credit.title}
+                    </p>
+                    {credit.release_year && (
+                      <p className="text-[10px] text-muted-foreground text-center">{credit.release_year}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {filteredCredits.length > 15 && (
+                <p className="text-center text-sm text-muted-foreground mt-4">
+                  Showing 15 of {filteredCredits.length} credits
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
     );
   }
 
