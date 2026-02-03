@@ -27,7 +27,7 @@ const PinnedSeriesSection = ({ className }: PinnedSeriesSectionProps) => {
   if (isLoading || !pinnedSeries?.length) return null;
 
   return (
-    <div className={cn("py-4 relative z-30 lg:-mt-40 xl:-mt-40", className)}>
+    <div className={cn("pt-2 pb-2 md:pt-0 md:pb-2 relative z-30 lg:-mt-40 xl:-mt-40", className)}>
       {/* Glass effect background - desktop only */}
       <div className="hidden lg:block absolute inset-0 bg-background/5 backdrop-blur-md rounded-t-2xl" />
       <div className="relative z-10">

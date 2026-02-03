@@ -62,7 +62,7 @@ const Header = ({ onMenuClick, hideJoinMember = false }: HeaderProps) => {
 
   return (
     <header 
-      className={`fixed top-0 z-50 w-full transition-all duration-300 ${
+      className={`fixed top-0 z-50 w-full pt-[env(safe-area-inset-top)] transition-all duration-300 ${
         isScrolled 
           ? 'bg-black/40 backdrop-blur-md shadow-[0_0_20px_rgba(0,0,0,0.05)]' 
           : 'bg-transparent'

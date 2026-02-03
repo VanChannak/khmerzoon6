@@ -103,7 +103,7 @@ const TopAnimesSection = ({ className }: TopAnimesSectionProps = {}) => {
   }
 
   return (
-    <div className="space-y-4 w-full">
+    <div className="space-y-2 md:space-y-3 w-full">
       {/* Header Section */}
       <div className="flex items-center gap-4">
         {/* Large "TOP" text */}

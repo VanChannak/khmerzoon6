@@ -233,7 +233,7 @@ const HeroBanner = ({ page = 'home' }: HeroBannerProps) => {
   const description = getDescription(currentSlide);
 
   return (
-    <div className="relative h-[69vh] md:h-[38vh] lg:h-[90vh] xl:h-[90vh] mx-0 -mt-16 mb-0 lg:mb-0 lg:mx-0 lg:pb-0 overflow-hidden group max-w-full">
+    <div className="relative h-[69vh] md:h-[44vh] lg:h-[90vh] xl:h-[90vh] mx-0 -mt-16 mb-0 lg:mb-0 lg:mx-0 lg:pb-0 overflow-hidden group max-w-full">
       {/* Background Images/Video with Transition */}
       <div className="absolute inset-0">
         {showTrailer && trailerUrl ? (

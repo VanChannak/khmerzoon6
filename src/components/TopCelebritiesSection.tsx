@@ -113,7 +113,7 @@ export const TopCelebritiesSection = ({ className }: TopCelebritiesSectionProps)
 
   if (loading) {
     return (
-      <section className={`relative py-4 md:py-8 ${className || ''}`}>
+      <section className={`relative py-2 md:py-3 ${className || ''}`}>
         <div className="px-4 md:px-[15px]">
           <h2 className="text-2xl font-bold text-foreground mb-6">Popular Celebrities</h2>
           <div className="flex gap-4 overflow-hidden">
@@ -132,7 +132,7 @@ export const TopCelebritiesSection = ({ className }: TopCelebritiesSectionProps)
   if (celebrities.length === 0) return null;
 
   return (
-    <section className={`relative py-4 md:py-8 ${className || ''}`}>
+    <section className={`relative py-2 md:py-3 ${className || ''}`}>
       <div className="px-4 md:px-[15px]">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">

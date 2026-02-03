@@ -116,7 +116,7 @@ const TopMoviesSection = ({ className }: TopMoviesSectionProps = {}) => {
     return null;
   }
 
-  return <div className="space-y-4 w-full">
+  return <div className="space-y-2 md:space-y-3 w-full">
       {/* Header Section */}
       <div className="flex items-center gap-4 mx-[15px]">
         {/* Large "TOP" text */}
