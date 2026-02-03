@@ -25,7 +25,7 @@ import { WalletSection } from "@/components/wallet/WalletSection";
 import { SubscriptionDialog } from "@/components/subscription/SubscriptionDialog";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
-import CastMemberDialog from "@/components/movie/CastMemberDialog";
+
 import { useProfileImage } from "@/hooks/useProfileImage";
 import { useContentData, Content } from "@/hooks/useContentData";
 import { NativeBannerAdSlot } from "@/components/ads/NativeBannerAdSlot";
@@ -481,7 +481,6 @@ const WatchPage = () => {
   const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
   const [showDeviceLimitWarning, setShowDeviceLimitWarning] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
-  const [selectedCastMember, setSelectedCastMember] = useState<any>(null);
   const [shorts, setShorts] = useState<any[]>([]);
 
   // Convert episodes to correct format - include skip timestamps!
@@ -915,7 +914,7 @@ const WatchPage = () => {
               ) : castMembers.length > 0 ? (
                 <div ref={desktopCastScrollRef} className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide scroll-smooth px-1">
                   {castMembers.slice(0, 10).map((member, idx) => (
-                    <div key={idx} className="flex-shrink-0 cursor-pointer" onClick={() => setSelectedCastMember(member)}>
+                    <div key={idx} className="flex-shrink-0 cursor-pointer" onClick={() => navigate(`/celebrity/${member.id}`)}>
                       <div className={`${isMobile ? 'w-16 h-20' : 'w-20 h-28'} rounded-md overflow-hidden bg-muted ring-1 ring-border/30`}>
                         <img src={member.profile_url || "/placeholder.svg"} alt={member.actor_name} className="w-full h-full object-cover" />
                       </div>
@@ -1144,7 +1143,6 @@ const WatchPage = () => {
 
     {/* Dialogs */}
     <SubscriptionDialog open={showSubscriptionDialog} onOpenChange={setShowSubscriptionDialog} />
-    <CastMemberDialog castMember={selectedCastMember} isOpen={!!selectedCastMember} onClose={() => setSelectedCastMember(null)} castType={contentType === 'movie' ? 'movie' : 'series'} />
     <DeviceLimitWarning open={showDeviceLimitWarning} onOpenChange={setShowDeviceLimitWarning} maxDevices={maxDevices} activeSessions={sessions} currentDeviceId={currentDeviceId} onSignOutDevice={signOutDevice} onSignOutAllDevices={signOutAllDevices} />
     </>
   );
