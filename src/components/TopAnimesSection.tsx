@@ -130,13 +130,13 @@ const TopAnimesSection = ({ className }: TopAnimesSectionProps = {}) => {
         </div>
       </div>
 
-      {/* Content Row */}
+      {/* Content Row - 4 columns on iPad portrait */}
       <div className="relative">
-        <div className="flex gap-3 md:gap-4 xl:gap-6 overflow-x-auto scrollbar-hide pb-4">
-          {content.map((item) => (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4 xl:gap-6 pb-4">
+          {content.slice(0, 8).map((item) => (
             <div
               key={item.id}
-              className="flex-shrink-0 w-44 md:w-48 xl:w-56 2xl:w-60 cursor-pointer"
+              className="cursor-pointer"
               onClick={() => handleCardClick(item)}
             >
               <MovieCard
