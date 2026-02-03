@@ -140,10 +140,10 @@ const TopMoviesSection = ({ className }: TopMoviesSectionProps = {}) => {
         </div>
       </div>
 
-      {/* Content Row - 4 columns on iPad portrait */}
+      {/* Content Row - horizontal scroll */}
       <div className="relative">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4 xl:gap-6 pb-4">
-          {content.slice(0, 8).map(item => <div key={item.id} className="cursor-pointer" onClick={() => handleCardClick(item)}>
+        <div className="flex gap-3 md:gap-4 xl:gap-6 overflow-x-auto scrollbar-hide pb-4">
+          {content.map(item => <div key={item.id} className="flex-shrink-0 w-[160px] sm:w-[180px] md:w-[200px] lg:w-[220px] xl:w-56 2xl:w-60 cursor-pointer" onClick={() => handleCardClick(item)}>
               <MovieCard
                 id={item.id}
                 title={item.title}
