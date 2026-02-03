@@ -877,13 +877,28 @@ const NativeVideoPlayer = ({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  // Auto-hide controls after 4 seconds when playing
+  const startControlsAutoHideTimer = useCallback(() => {
+    if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+    controlsTimeoutRef.current = setTimeout(() => {
+      if (isPlaying && !isScreenLocked) setShowControls(false);
+    }, 4000); // Fixed 4 second auto-hide
+  }, [isPlaying, isScreenLocked]);
+
+  // Trigger auto-hide when video starts playing
+  useEffect(() => {
+    if (isPlaying && showControls && !isScreenLocked) {
+      startControlsAutoHideTimer();
+    }
+    return () => {
+      if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+    };
+  }, [isPlaying, showControls, isScreenLocked, startControlsAutoHideTimer]);
+
   const handleMouseMove = () => {
     if (isScreenLocked) return;
     setShowControls(true);
-    if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
-    controlsTimeoutRef.current = setTimeout(() => {
-      if (isPlaying) setShowControls(false);
-    }, playerSettings.autoHideControlsMs || 3000);
+    startControlsAutoHideTimer();
   };
 
   const handleServerChange = useCallback(async (source: VideoSource) => {
