@@ -155,7 +155,7 @@ const ContentRow = ({ title, category, contentType, className }: ContentRowProps
   }
 
   return (
-    <div className="space-y-4 mb-10">
+    <div className="space-y-2 md:space-y-3 mb-4 md:mb-6">
       <h2 className="text-xl md:text-2xl xl:text-3xl font-bold text-foreground px-2 md:px-0">{title}</h2>
       <div className="flex gap-2 md:gap-3 xl:gap-5 2xl:gap-6 overflow-x-auto pb-4 scrollbar-hide py-2 px-2 scroll-smooth">
         {content.map((item) => {
