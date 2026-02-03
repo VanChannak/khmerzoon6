@@ -233,7 +233,7 @@ const HeroBanner = ({ page = 'home' }: HeroBannerProps) => {
   const description = getDescription(currentSlide);
 
   return (
-    <div className="relative h-[69vh] md:h-[70vh] lg:h-[90vh] xl:h-[90vh] mx-0 -mt-16 mb-0 lg:mb-0 lg:mx-0 lg:pb-0 overflow-hidden group max-w-full">
+    <div className="relative h-[69vh] md:aspect-video md:h-auto md:max-h-[30vh] lg:h-[90vh] lg:max-h-none lg:aspect-auto xl:h-[90vh] mx-0 -mt-16 mb-0 lg:mb-0 lg:mx-0 lg:pb-0 overflow-hidden group max-w-full">
       {/* Background Images/Video with Transition */}
       <div className="absolute inset-0">
         {showTrailer && trailerUrl ? (
@@ -318,8 +318,8 @@ const HeroBanner = ({ page = 'home' }: HeroBannerProps) => {
         </>
       )}
 
-      {/* Content */}
-      <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 xl:p-12 z-20 max-w-3xl xl:max-w-4xl 2xl:max-w-5xl">
+      {/* Content - Desktop Layout (lg and up) */}
+      <div className="hidden lg:block absolute bottom-0 left-0 right-0 p-6 md:p-8 xl:p-12 z-20 max-w-3xl xl:max-w-4xl 2xl:max-w-5xl">
         <h1 className="text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-2 drop-shadow-lg">
           {currentSlide.title}
         </h1>
@@ -362,9 +362,120 @@ const HeroBanner = ({ page = 'home' }: HeroBannerProps) => {
         </div>
       </div>
 
-      {/* Slide Indicators */}
+      {/* Content - iPad/Tablet Layout (md to lg) */}
+      <div className="hidden md:flex lg:hidden absolute bottom-0 left-0 right-0 p-4 z-20 items-end justify-between">
+        {/* Left side: Tags + Title */}
+        <div className="flex-1 min-w-0">
+          {/* Tags */}
+          <div className="flex items-center gap-1.5 mb-2 flex-wrap">
+            {currentSlide.category && (
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5">{currentSlide.category}</Badge>
+            )}
+          </div>
+          {/* Title - single line */}
+          <h1 className="text-lg font-bold text-white drop-shadow-lg truncate pr-4">
+            {currentSlide.title}
+          </h1>
+        </div>
+
+        {/* Right side: Buttons + Dots stacked */}
+        <div className="flex flex-col items-end gap-2 flex-shrink-0">
+          {/* Buttons - scaled smaller */}
+          <div className="flex gap-2">
+            <Button 
+              size="sm" 
+              onClick={handlePlayClick}
+              className="gap-1 h-8 px-3 text-xs transition-all duration-200 hover:scale-105 shadow-lg focus:outline-none focus-visible:ring-0"
+            >
+              <Play className="w-3 h-3" />
+              Play
+            </Button>
+            <Button 
+              size="sm" 
+              variant="secondary" 
+              onClick={handleAddToList}
+              className="gap-1 h-8 px-3 text-xs transition-all duration-200 hover:scale-105 shadow-lg backdrop-blur-sm focus:outline-none focus-visible:ring-0"
+            >
+              {currentSlide.content_id && inMyList.has(currentSlide.content_id) ? (
+                <>
+                  <Check className="w-3 h-3" />
+                  In List
+                </>
+              ) : (
+                <>
+                  <Plus className="w-3 h-3" />
+                  My List
+                </>
+              )}
+            </Button>
+          </div>
+          
+          {/* Slide Indicators */}
+          {slides.length > 1 && (
+            <div className="flex gap-1.5">
+              {slides.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => goToSlide(index)}
+                  className={`w-1.5 h-1.5 rounded-full transition-all focus:outline-none ${
+                    index === currentIndex 
+                      ? 'bg-white w-5' 
+                      : 'bg-white/50 hover:bg-white/75'
+                  }`}
+                  aria-label={`Go to slide ${index + 1}`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile Layout (below md) */}
+      <div className="md:hidden absolute bottom-0 left-0 right-0 p-6 z-20 max-w-3xl">
+        <h1 className="text-3xl font-bold text-white mb-2 drop-shadow-lg">
+          {currentSlide.title}
+        </h1>
+        {currentSlide.category && (
+          <Badge variant="secondary" className="mb-3 text-xs">{currentSlide.category}</Badge>
+        )}
+        {description && (
+          <p className="text-base text-white/90 mb-4 line-clamp-2">
+            {description}
+          </p>
+        )}
+        <div className="flex gap-3">
+          <Button 
+            size="lg" 
+            onClick={handlePlayClick}
+            className="gap-2 transition-all duration-200 hover:scale-105 shadow-lg focus:outline-none focus-visible:ring-0"
+          >
+            <Play className="w-4 h-4" />
+            Play
+          </Button>
+          <Button 
+            size="lg" 
+            variant="secondary" 
+            onClick={handleAddToList}
+            className="gap-2 transition-all duration-200 hover:scale-105 shadow-lg backdrop-blur-sm focus:outline-none focus-visible:ring-0"
+          >
+            {currentSlide.content_id && inMyList.has(currentSlide.content_id) ? (
+              <>
+                <Check className="w-4 h-4" />
+                In My List
+              </>
+            ) : (
+              <>
+                <Plus className="w-4 h-4" />
+                Add To MyList
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+
+      {/* Slide Indicators - Desktop & Mobile only (hidden on tablet, shown in tablet layout above) */}
       {slides.length > 1 && (
-        <div className="absolute bottom-4 right-4 md:right-8 z-20 flex gap-2">
+        <div className="md:hidden lg:flex absolute bottom-4 right-4 md:right-8 z-20 hidden lg:flex gap-2">
           {slides.map((_, index) => (
             <button
               key={index}
