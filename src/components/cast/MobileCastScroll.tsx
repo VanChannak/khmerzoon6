@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import CastMemberDialog from "./CastMemberDialog";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 
 interface MobileCastScrollProps {
   castWithProfiles: Array<{
@@ -12,12 +12,11 @@ interface MobileCastScrollProps {
 }
 
 const MobileCastScroll = ({ castWithProfiles }: MobileCastScrollProps) => {
-  const [selectedCastMember, setSelectedCastMember] = useState<any>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleCastMemberClick = (castMember: any) => {
-    setSelectedCastMember(castMember);
-    setIsDialogOpen(true);
+    // Navigate to celebrity page using the cast member's id (TMDB ID)
+    navigate(`/celebrity/${castMember.id}`);
   };
 
   return (
@@ -49,12 +48,6 @@ const MobileCastScroll = ({ castWithProfiles }: MobileCastScrollProps) => {
           ))}
         </div>
       </div>
-
-      <CastMemberDialog
-        castMember={selectedCastMember}
-        isOpen={isDialogOpen}
-        onClose={() => setIsDialogOpen(false)}
-      />
     </div>
   );
 };

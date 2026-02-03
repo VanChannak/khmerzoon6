@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
-import CastMemberDialog from '@/components/cast/CastMemberDialog';
 import { getImageUrl } from '@/components/cast/utils';
 interface Content {
   id: string;
@@ -39,7 +38,6 @@ const HomeContinuousWatch = () => {
   const [watchHistory, setWatchHistory] = useState<WatchHistoryItem[]>([]);
   const [castMembers, setCastMembers] = useState<CastMember[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedCastId, setSelectedCastId] = useState<number | null>(null);
   const [currentPosterIndex, setCurrentPosterIndex] = useState(0);
   useEffect(() => {
     fetchContinuousWatch();
@@ -345,7 +343,7 @@ const HomeContinuousWatch = () => {
               {/* Cast Section - Responsive */}
               {castMembers.length > 0 && <div className="pt-px">
                   <div className="flex gap-3 md:gap-5 xl:gap-6 overflow-x-auto scrollbar-hide">
-                    {castMembers.map(cast => <div key={cast.id} onClick={() => setSelectedCastId(cast.tmdb_id)} className="flex-shrink-0 cursor-pointer group/cast-item flex items-center gap-2 md:gap-3 py-[16px]">
+                    {castMembers.map(cast => <div key={cast.id} onClick={() => navigate(`/celebrity/${cast.tmdb_id}`)} className="flex-shrink-0 cursor-pointer group/cast-item flex items-center gap-2 md:gap-3 py-[16px]">
                         <div className="relative w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-full overflow-hidden bg-muted border-2 md:border-4 border-border group-hover/cast-item:border-primary transition-all shadow-lg flex-shrink-0">
                           <img src={getImageUrl(cast.profile_path)} alt={cast.name} className="w-full h-full object-cover transition-transform duration-300 group-hover/cast-item:scale-110" onError={e => {
                       console.error('Failed to load image:', getImageUrl(cast.profile_path));
@@ -365,15 +363,6 @@ const HomeContinuousWatch = () => {
 
         </div>
       </div>
-
-      {/* Cast Member Dialog */}
-      {selectedCastId && <CastMemberDialog castMember={{
-      id: selectedCastId,
-      name: castMembers.find(c => c.tmdb_id === selectedCastId)?.name || '',
-      role: '',
-      image: getImageUrl(castMembers.find(c => c.tmdb_id === selectedCastId)?.profile_path || ''),
-      profile_path: castMembers.find(c => c.tmdb_id === selectedCastId)?.profile_path || null
-    }} isOpen={selectedCastId !== null} onClose={() => setSelectedCastId(null)} />}
     </div>;
 };
 export default HomeContinuousWatch;

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useIsTablet } from "@/hooks/use-tablet";
+import { useIsIPad } from "@/hooks/use-ipad";
 import { 
   ArrowLeft, 
   Film, 
@@ -72,6 +73,10 @@ const CelebrityPage = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const isTablet = useIsTablet();
+  const { isIPad, isIPadPortrait, isIPadLandscape } = useIsIPad();
+  
+  // Use mobile layout for: mobile devices OR iPad in portrait mode
+  const useMobileLayout = isMobile || isIPadPortrait;
   
   const [person, setPerson] = useState<PersonDetails | null>(null);
   const [loading, setLoading] = useState(true);
@@ -250,8 +255,8 @@ const CelebrityPage = () => {
     );
   };
 
-  // Mobile Loading Skeleton
-  if (loading && isMobile) {
+  // Mobile Loading Skeleton (also for iPad portrait)
+  if (loading && useMobileLayout) {
     return (
       <div className="min-h-screen bg-background">
         <Skeleton className="w-full aspect-square" />
@@ -325,8 +330,8 @@ const CelebrityPage = () => {
   const filteredCredits = getFilteredCredits();
   const totalCredits = person.total_movie_credits + person.total_tv_credits;
 
-  // Mobile Layout
-  if (isMobile) {
+  // Mobile Layout (also used for iPad portrait)
+  if (useMobileLayout) {
     return (
       <div className="fixed inset-0 overflow-hidden">
         {/* Fixed Full-Width Profile Image - Absolutely positioned, stays in place */}

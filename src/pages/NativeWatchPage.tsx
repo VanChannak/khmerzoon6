@@ -18,7 +18,7 @@ import { WalletSection } from "@/components/wallet/WalletSection";
 import { SubscriptionDialog } from "@/components/subscription/SubscriptionDialog";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
-import CastMemberDialog from "@/components/movie/CastMemberDialog";
+
 import { useProfileImage } from "@/hooks/useProfileImage";
 import { useContentData, Content } from "@/hooks/useContentData";
 import { NativeBannerAdSlot } from "@/components/ads/NativeBannerAdSlot";
@@ -383,7 +383,6 @@ const [castMembers, setCastMembers] = useState<any[]>([]);
   const [episodesLoading, setEpisodesLoading] = useState(false);
   const [userProfile, setUserProfile] = useState<{ username: string | null; profile_image: string | null } | null>(null);
   const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
-  const [selectedCastMember, setSelectedCastMember] = useState<any>(null);
 
   // Convert episodes - include skip intro/outro timestamps
   const episodes: Episode[] = useMemo(() => rawEpisodes.map(ep => ({
@@ -820,7 +819,7 @@ const [castMembers, setCastMembers] = useState<any[]>([]);
                 ) : castMembers.length > 0 ? (
                   <div ref={desktopCastScrollRef} className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide scroll-smooth px-1">
                     {castMembers.slice(0, 10).map((member, idx) => (
-                      <div key={idx} className="flex-shrink-0 cursor-pointer" onClick={() => setSelectedCastMember(member)}>
+                      <div key={idx} className="flex-shrink-0 cursor-pointer" onClick={() => navigate(`/celebrity/${member.id}`)}>
                         <div className="w-16 h-20 rounded-md overflow-hidden bg-muted ring-1 ring-border/30">
                           <img src={member.profile_url || "/placeholder.svg"} alt={member.actor_name} className="w-full h-full object-cover" />
                         </div>
@@ -939,18 +938,6 @@ const [castMembers, setCastMembers] = useState<any[]>([]);
       </div>
 
       <SubscriptionDialog open={showSubscriptionDialog} onOpenChange={setShowSubscriptionDialog} />
-      
-      {selectedCastMember && (
-        <CastMemberDialog
-          isOpen={!!selectedCastMember}
-          onClose={() => setSelectedCastMember(null)}
-          castMember={{
-            actor_name: selectedCastMember.actor_name,
-            character_name: selectedCastMember.character_name,
-            profile_url: selectedCastMember.profile_url
-          }}
-        />
-      )}
     </>
   );
 };
