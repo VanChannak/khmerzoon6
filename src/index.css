@@ -566,9 +566,9 @@ body.native-app-immersive {
   margin-top: 0 !important;
 }
 
-/* Watch page in portrait: player starts from top edge (no extra padding) */
+/* Watch page in portrait: player below status bar for PWA */
 .watch-page-portrait-safe {
-  padding-top: 0 !important;
+  padding-top: env(safe-area-inset-top) !important;
   margin-top: 0 !important;
   background-color: black !important;
 }
