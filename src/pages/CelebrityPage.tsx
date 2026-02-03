@@ -812,9 +812,9 @@ const CelebrityPage = () => {
                       href={`https://twitter.com/${person.external_ids.twitter_id}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors"
+                      className="p-2.5 rounded-full bg-secondary border border-border hover:bg-accent hover:text-accent-foreground transition-colors"
                     >
-                      <Twitter className="h-4 w-4" />
+                      <Twitter className="h-4 w-4 text-foreground" />
                     </a>
                   )}
                   {person.external_ids.instagram_id && (
@@ -822,9 +822,9 @@ const CelebrityPage = () => {
                       href={`https://instagram.com/${person.external_ids.instagram_id}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors"
+                      className="p-2.5 rounded-full bg-secondary border border-border hover:bg-accent hover:text-accent-foreground transition-colors"
                     >
-                      <Instagram className="h-4 w-4" />
+                      <Instagram className="h-4 w-4 text-foreground" />
                     </a>
                   )}
                   {person.external_ids.facebook_id && (
@@ -832,9 +832,9 @@ const CelebrityPage = () => {
                       href={`https://facebook.com/${person.external_ids.facebook_id}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors"
+                      className="p-2.5 rounded-full bg-secondary border border-border hover:bg-accent hover:text-accent-foreground transition-colors"
                     >
-                      <Facebook className="h-4 w-4" />
+                      <Facebook className="h-4 w-4 text-foreground" />
                     </a>
                   )}
                   {person.external_ids.imdb_id && (
@@ -842,9 +842,9 @@ const CelebrityPage = () => {
                       href={`https://imdb.com/name/${person.external_ids.imdb_id}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors"
+                      className="p-2.5 rounded-full bg-secondary border border-border hover:bg-accent hover:text-accent-foreground transition-colors"
                     >
-                      <ExternalLink className="h-4 w-4" />
+                      <ExternalLink className="h-4 w-4 text-foreground" />
                     </a>
                   )}
                 </div>
