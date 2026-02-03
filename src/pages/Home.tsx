@@ -16,7 +16,6 @@ import SeriesUpdateTodaySection from '@/components/SeriesUpdateTodaySection';
 import TopCelebritiesSection from '@/components/TopCelebritiesSection';
 import PinnedSeriesSection from '@/components/PinnedSeriesSection';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useIsIPad } from '@/hooks/use-ipad';
 import { useHomeSections } from '@/hooks/useHomeSections';
 import React from 'react';
 
@@ -57,11 +56,10 @@ const mobileSectionComponents: Record<string, React.FC<{ className?: string }>> 
 
 const Home = () => {
   const isMobile = useIsMobile();
-  const { isIPadPortrait } = useIsIPad();
   const { sections, isVisibleWeb, isVisibleMobile, loading } = useHomeSections();
 
-  // Mobile layout: mobile devices OR iPad in portrait mode
-  const useMobileLayout = isMobile || isIPadPortrait;
+  // Mobile layout: only mobile devices (iPad uses desktop layout)
+  const useMobileLayout = isMobile;
 
   if (loading) {
     return <div className="min-h-screen" />;

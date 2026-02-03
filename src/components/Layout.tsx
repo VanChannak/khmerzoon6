@@ -62,9 +62,8 @@ const Layout = ({ children }: LayoutProps) => {
   // Determine if we should use mobile layout:
   // - Native apps always use mobile layout
   // - Mobile devices (< 768px) use mobile layout
-  // - iPad in portrait mode uses mobile layout
-  // - iPad in landscape mode uses desktop layout
-  const useMobileLayout = isNative || isMobile || isIPadPortrait;
+  // - iPad (both portrait and landscape) uses desktop layout
+  const useMobileLayout = isNative || isMobile;
 
   // Mobile / Native / iPad Portrait layout
   if (useMobileLayout) {
