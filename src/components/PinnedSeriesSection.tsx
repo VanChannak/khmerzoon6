@@ -27,7 +27,7 @@ const PinnedSeriesSection = ({ className }: PinnedSeriesSectionProps) => {
   if (isLoading || !pinnedSeries?.length) return null;
 
   return (
-    <div className={cn("py-4", className)}>
+    <div className={cn("py-4 relative z-30 lg:-mt-24 xl:-mt-28", className)}>
       <div className="px-4 md:px-[15px]">
         <h2 className="text-xl md:text-2xl font-bold mb-4">📌 Pinned Series</h2>
       </div>
