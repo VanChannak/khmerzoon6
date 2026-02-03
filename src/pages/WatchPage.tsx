@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { Database } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Home, Film, Tv, ThumbsUp, ThumbsDown, Share2, LayoutDashboard, Sparkles, MessageSquare, Info, ChevronDown, Wallet, Crown, ChevronRight } from "lucide-react";
+import { Home, Film, Tv, ThumbsUp, ThumbsDown, Share2, LayoutDashboard, Sparkles, MessageSquare, Info, ChevronDown, Wallet, Crown, ChevronRight, Languages, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import NativeVideoPlayer from "@/components/NativeVideoPlayer";
@@ -31,6 +31,88 @@ import { useContentData, Content } from "@/hooks/useContentData";
 import { NativeBannerAdSlot } from "@/components/ads/NativeBannerAdSlot";
 import { useIframeFullscreenHandler, useFullscreenState } from "@/hooks/useFullscreenState";
 import { Capacitor } from "@capacitor/core";
+import { useTranslation } from "@/hooks/useTranslation";
+
+// DetailTabContent component with translation feature
+interface DetailTabContentProps {
+  overview?: string | null;
+}
+
+const DetailTabContent = ({ overview }: DetailTabContentProps) => {
+  const { t, language } = useLanguage();
+  const { translateText, isTranslating } = useTranslation();
+  const [translatedOverview, setTranslatedOverview] = useState<string | null>(null);
+  const [showTranslated, setShowTranslated] = useState(false);
+
+  const handleTranslate = async () => {
+    if (!overview) return;
+    
+    if (showTranslated && translatedOverview) {
+      // Toggle back to original
+      setShowTranslated(false);
+      return;
+    }
+
+    if (translatedOverview) {
+      // Already translated, just show it
+      setShowTranslated(true);
+      return;
+    }
+
+    // Translate to Khmer
+    const translated = await translateText(overview, 'km');
+    if (translated) {
+      setTranslatedOverview(translated);
+      setShowTranslated(true);
+    }
+  };
+
+  const displayText = showTranslated && translatedOverview 
+    ? translatedOverview 
+    : (overview || t('noDescriptionAvailable'));
+
+  return (
+    <div className="space-y-3">
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <h4 className="font-semibold text-sm">{t('description')}</h4>
+          {overview && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleTranslate}
+              disabled={isTranslating}
+              className="h-7 px-2 text-xs gap-1.5 text-muted-foreground hover:text-foreground"
+            >
+              {isTranslating ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  {language === 'km' ? 'កំពុងបកប្រែ...' : 'Translating...'}
+                </>
+              ) : (
+                <>
+                  <Languages className="h-3.5 w-3.5" />
+                  {showTranslated 
+                    ? (language === 'km' ? 'មើលភាសាដើម' : 'Show Original')
+                    : (language === 'km' ? 'បកប្រែជាខ្មែរ' : 'Translate to Khmer')
+                  }
+                </>
+              )}
+            </Button>
+          )}
+        </div>
+        <p className="text-muted-foreground text-sm leading-relaxed">
+          {displayText}
+        </p>
+        {showTranslated && translatedOverview && (
+          <p className="text-xs text-muted-foreground/60 mt-2 italic">
+            {language === 'km' ? '* បកប្រែដោយ AI' : '* Translated by AI'}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+};
 
 interface Episode {
   id: string;
@@ -333,14 +415,9 @@ const CollapsibleTabsSection = ({
 
       {/* Detail Tab */}
       <TabsContent value="detail" className="mt-3">
-        <div className="space-y-3">
-          <div>
-            <h4 className="font-semibold text-sm mb-1">{t('description')}</h4>
-            <p className="text-muted-foreground text-sm">
-              {content?.overview || t('noDescriptionAvailable')}
-            </p>
-          </div>
-        </div>
+        <DetailTabContent 
+          overview={content?.overview}
+        />
       </TabsContent>
 
       {/* Home Tab */}
