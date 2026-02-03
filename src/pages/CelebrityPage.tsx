@@ -344,8 +344,8 @@ const CelebrityPage = () => {
               </span>
             </div>
           )}
-          {/* Gradient overlay at bottom of image */}
-          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background/50 to-transparent" />
+          {/* Gradient overlay at bottom of image - works in dark/light mode */}
+          <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-background via-background/60 to-transparent" />
         </div>
 
         {/* Back Button - Fixed on top */}
