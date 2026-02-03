@@ -198,6 +198,7 @@ const NativeVideoPlayer = ({
   // Video settings state
   const [stableVolume, setStableVolume] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const [isSettingsMenuOpen, setIsSettingsMenuOpen] = useState(false);
   const [sleepTimer, setSleepTimer] = useState(0);
   const [currentTextTrack, setCurrentTextTrack] = useState('off');
   const [currentQuality, setCurrentQuality] = useState('auto');
@@ -877,23 +878,30 @@ const NativeVideoPlayer = ({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Auto-hide controls after 4 seconds when playing
+  // Auto-hide controls after 4 seconds when playing (but not when settings menu is open)
   const startControlsAutoHideTimer = useCallback(() => {
     if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+    // Don't start timer if settings menu is open
+    if (isSettingsMenuOpen) return;
     controlsTimeoutRef.current = setTimeout(() => {
-      if (isPlaying && !isScreenLocked) setShowControls(false);
+      if (isPlaying && !isScreenLocked && !isSettingsMenuOpen) setShowControls(false);
     }, 4000); // Fixed 4 second auto-hide
-  }, [isPlaying, isScreenLocked]);
+  }, [isPlaying, isScreenLocked, isSettingsMenuOpen]);
 
-  // Trigger auto-hide when video starts playing
+  // Trigger auto-hide when video starts playing (but pause when settings menu is open)
   useEffect(() => {
+    if (isSettingsMenuOpen) {
+      // Clear any existing timer when menu opens
+      if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+      return;
+    }
     if (isPlaying && showControls && !isScreenLocked) {
       startControlsAutoHideTimer();
     }
     return () => {
       if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
     };
-  }, [isPlaying, showControls, isScreenLocked, startControlsAutoHideTimer]);
+  }, [isPlaying, showControls, isScreenLocked, isSettingsMenuOpen, startControlsAutoHideTimer]);
 
   const handleMouseMove = () => {
     if (isScreenLocked) return;
@@ -1689,6 +1697,7 @@ const NativeVideoPlayer = ({
                     onQualityChange={handleQualityChange}
                     onAutoQualityToggle={handleAutoQualityToggle}
                     sourceType={sourceType}
+                    onOpenChange={setIsSettingsMenuOpen}
                   />
                   
                   <Button 
