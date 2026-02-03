@@ -293,10 +293,10 @@ const HeroBanner = ({ page = 'home' }: HeroBannerProps) => {
         )}
       </div>
 
-      {/* Gradient overlays */}
-      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent z-10" />
+      {/* Gradient overlays - darker for dark mode */}
+      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent dark:from-background dark:via-background/80 dark:to-transparent z-10" />
       {/* Left gradient overlay - 40% width, Desktop only */}
-      <div className="hidden lg:block absolute inset-y-0 left-0 w-[40%] bg-gradient-to-r from-background/50 via-background/30 to-transparent z-10" />
+      <div className="hidden lg:block absolute inset-y-0 left-0 w-[40%] bg-gradient-to-r from-background/50 via-background/30 to-transparent dark:from-background/70 dark:via-background/40 z-10" />
 
       {/* Navigation Arrows */}
       {slides.length > 1 && (
