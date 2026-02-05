@@ -1,7 +1,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { S3Client, PutObjectCommand } from 'npm:@aws-sdk/client-s3';
 
-// Force redeploy to pick up latest secrets - v3
+// Supports iDrive E2 and Cloudflare R2 - v5
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,7 +13,7 @@ interface UploadRequest {
   fileData: string; // base64 encoded
   bucket: string;
   contentType?: string;
-  storage?: 'storage1' | 'storage2';
+  storage?: 'storage1' | 'storage2' | 'r2';
 }
 
 serve(async (req) => {
@@ -24,79 +24,89 @@ serve(async (req) => {
   try {
     const { fileName, fileData, bucket, contentType, storage = 'storage1' }: UploadRequest = await req.json();
 
-    // Get credentials from environment
-    const rawEndpoint = storage === 'storage1'
-      ? Deno.env.get('IDRIVE_E2_STORAGE1_ENDPOINT')
-      : Deno.env.get('IDRIVE_E2_STORAGE2_ENDPOINT');
+    let endpoint: string;
+    let accessKeyId: string | undefined;
+    let secretAccessKey: string | undefined;
+    let region: string;
+    let publicUrlBase: string;
 
-    // Debug: Log what we received
-    console.log('Storage config:', {
-      storage,
-      rawEndpoint: rawEndpoint ? `${rawEndpoint.substring(0, 10)}...` : 'undefined',
-      hasEndpoint: !!rawEndpoint,
-      endpointLength: rawEndpoint?.length || 0,
-    });
+    console.log('Upload request received:', { storage, bucket, fileName });
 
-    // Check if endpoint is a placeholder or invalid - case insensitive check
-    const lowerEndpoint = rawEndpoint?.toLowerCase() || '';
-    if (!rawEndpoint || lowerEndpoint.includes('placeholder') || rawEndpoint.length < 10 || !rawEndpoint.includes('.')) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: `IDRIVE_E2_STORAGE1_ENDPOINT is invalid. Current value starts with: "${rawEndpoint?.substring(0, 20) || 'EMPTY'}". Please set a valid iDrive E2 endpoint like: s6k7.la12.idrivee2-32.com`,
-          debug: {
-            hasValue: !!rawEndpoint,
-            valueLength: rawEndpoint?.length || 0,
-            startsWithPlaceholder: lowerEndpoint.includes('placeholder'),
-            firstChars: rawEndpoint?.substring(0, 20) || 'EMPTY',
+    if (storage === 'r2') {
+      // Cloudflare R2 configuration
+      const accountId = Deno.env.get('CLOUDFLARE_ACCOUNT_ID');
+      accessKeyId = Deno.env.get('CLOUDFLARE_R2_ACCESS_KEY');
+      secretAccessKey = Deno.env.get('CLOUDFLARE_R2_SECRET_KEY');
+      const customPublicUrl = Deno.env.get('CLOUDFLARE_R2_PUBLIC_URL');
+
+      if (!accountId || !accessKeyId || !secretAccessKey) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: 'Cloudflare R2 credentials not configured. Please set CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_R2_ACCESS_KEY, and CLOUDFLARE_R2_SECRET_KEY.',
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 400,
           }
-        }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 400,
-        }
-      );
+        );
+      }
+
+      endpoint = `https://${accountId}.r2.cloudflarestorage.com`;
+      region = 'auto';
+      publicUrlBase = customPublicUrl || `https://${bucket}.${accountId}.r2.dev`;
+    } else {
+      // iDrive E2 configuration
+      const rawEndpoint = storage === 'storage1'
+        ? Deno.env.get('IDRIVE_E2_STORAGE1_ENDPOINT')
+        : Deno.env.get('IDRIVE_E2_STORAGE2_ENDPOINT');
+
+      accessKeyId = storage === 'storage1'
+        ? Deno.env.get('IDRIVE_E2_STORAGE1_ACCESS_KEY')
+        : Deno.env.get('IDRIVE_E2_STORAGE2_ACCESS_KEY');
+
+      secretAccessKey = storage === 'storage1'
+        ? Deno.env.get('IDRIVE_E2_STORAGE1_SECRET_KEY')
+        : Deno.env.get('IDRIVE_E2_STORAGE2_SECRET_KEY');
+
+      if (!rawEndpoint || rawEndpoint.toLowerCase().includes('placeholder') || rawEndpoint.length < 10) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: 'iDrive E2 endpoint not configured correctly.',
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 400,
+          }
+        );
+      }
+
+      const cleanEndpoint = rawEndpoint.trim().replace(/^https?:\/\//, '').replace(/\/+$/, '');
+      endpoint = `https://${cleanEndpoint}`;
+      region = storage === 'storage2' ? 'ap-southeast-1' : 'us-east-1';
+      publicUrlBase = `https://${cleanEndpoint}/${bucket}`;
     }
 
-    const endpoint = rawEndpoint?.trim().replace(/^https?:\/\//, '').replace(/\/+$/, '');
-
-    const accessKeyId = storage === 'storage1'
-      ? Deno.env.get('IDRIVE_E2_STORAGE1_ACCESS_KEY')
-      : Deno.env.get('IDRIVE_E2_STORAGE2_ACCESS_KEY');
-
-    const secretAccessKey = storage === 'storage1'
-      ? Deno.env.get('IDRIVE_E2_STORAGE1_SECRET_KEY')
-      : Deno.env.get('IDRIVE_E2_STORAGE2_SECRET_KEY');
-
-    // IMPORTANT: hardcode region for storage2 to avoid placeholder/invalid secret values.
-    const region = storage === 'storage2' ? 'ap-southeast-1' : 'us-east-1';
-
-    const debug = {
-      storage,
-      envEndpoint: rawEndpoint ?? null,
-      envRegion: Deno.env.get('IDRIVE_E2_STORAGE2_REGION') ?? null,
-      usedRegion: region,
-    };
-
-    if (!endpoint || !accessKeyId || !secretAccessKey) {
-      throw new Error(`Storage credentials not configured. Debug: ${JSON.stringify(debug)}`);
+    if (!accessKeyId || !secretAccessKey) {
+      throw new Error('Storage credentials not configured.');
     }
 
     // Create S3 client
     const s3Client = new S3Client({
-      endpoint: `https://${endpoint}`,
+      endpoint,
       region,
       credentials: {
         accessKeyId,
         secretAccessKey,
       },
-      forcePathStyle: true,
+      forcePathStyle: storage !== 'r2',
     });
 
     // Decode base64 file data
     const binaryData = Uint8Array.from(atob(fileData), c => c.charCodeAt(0));
 
-    // Upload to iDrive E2
+    // Upload to storage
     const command = new PutObjectCommand({
       Bucket: bucket,
       Key: fileName,
@@ -106,9 +116,11 @@ serve(async (req) => {
 
     await s3Client.send(command);
 
-    const publicUrl = `https://${endpoint}/${bucket}/${fileName}`;
+    const publicUrl = storage === 'r2' 
+      ? `${publicUrlBase}/${fileName}`
+      : `${publicUrlBase}/${fileName}`;
     
-    console.log('Upload successful:', { bucket, fileName, publicUrl });
+    console.log('Upload successful:', { storage, bucket, fileName, publicUrl });
 
     return new Response(
       JSON.stringify({ 
@@ -129,7 +141,6 @@ serve(async (req) => {
       JSON.stringify({ 
         success: false, 
         error: errorMessage,
-        details: error instanceof Error ? error.stack : undefined,
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
