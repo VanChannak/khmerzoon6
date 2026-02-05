@@ -44,34 +44,27 @@ export const ProfileImageUpload = ({ type, currentImage, onUploadSuccess }: Prof
     try {
       setUploading(true);
 
-      // Convert file to base64 for iDrive E2 upload
-      const arrayBuffer = await selectedFile.arrayBuffer();
-      const base64Data = btoa(
-        new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
-      );
-
-      // Generate unique filename for iDrive E2 (relative to bucket, no bucket prefix)
+      // Generate unique filename for Supabase Storage
       const fileExt = selectedFile.name.split('.').pop();
       const timestamp = Date.now();
-      const fileName = `${user.id}/${type}-${timestamp}.${fileExt}`;
-      // Upload to iDrive E2 via edge function
-      const { data, error } = await supabase.functions.invoke('upload-to-idrive', {
-        body: {
-          fileName,
-          fileData: base64Data,
-          bucket: 'user-profiles',
-          contentType: selectedFile.type,
-          storage: 'storage1'
-        }
-      });
+      const filePath = `${user.id}/${type}-${timestamp}.${fileExt}`;
+      
+      // Upload to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('user-profiles')
+        .upload(filePath, selectedFile, {
+          cacheControl: '3600',
+          upsert: true
+        });
 
       if (error) throw error;
-      if (!data?.success) {
-        console.error('Upload response:', data);
-        throw new Error(data?.error || 'Upload failed');
-      }
 
-      const publicUrl = data.url;
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('user-profiles')
+        .getPublicUrl(filePath);
+
+      const publicUrl = urlData.publicUrl;
 
       // Update profile in database
       const column = type === 'profile' ? 'profile_image' : 'cover_image';
@@ -89,14 +82,10 @@ export const ProfileImageUpload = ({ type, currentImage, onUploadSuccess }: Prof
       toast.success(`${type === 'profile' ? 'Profile' : 'Cover'} image updated successfully`);
     } catch (error: any) {
       console.error('Upload error:', error);
-      const errorMsg = error?.message || 'Upload failed. Please try again.';
-      // Show more user-friendly message
-      if (errorMsg.includes('credentials') || errorMsg.includes('Storage')) {
-        toast.error('Storage service not configured properly. Please contact support.');
-      } else if (errorMsg.includes('AccessDenied') || errorMsg.includes('NoSuchBucket')) {
-        toast.error('Storage bucket not found or access denied. Please contact support.');
+      if (error?.message?.includes('Bucket not found')) {
+        toast.error('Storage bucket not configured. Please create the user-profiles bucket.');
       } else {
-        toast.error(errorMsg);
+        toast.error(error?.message || 'Upload failed. Please try again.');
       }
     } finally {
       setUploading(false);
