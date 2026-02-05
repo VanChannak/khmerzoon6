@@ -27,6 +27,33 @@ serve(async (req) => {
       ? Deno.env.get('IDRIVE_E2_STORAGE1_ENDPOINT')
       : Deno.env.get('IDRIVE_E2_STORAGE2_ENDPOINT');
 
+    // Debug: Log what we received
+    console.log('Storage config:', {
+      storage,
+      rawEndpoint: rawEndpoint ? `${rawEndpoint.substring(0, 10)}...` : 'undefined',
+      hasEndpoint: !!rawEndpoint,
+      endpointLength: rawEndpoint?.length || 0,
+    });
+
+    // Check if endpoint is a placeholder or invalid
+    if (!rawEndpoint || rawEndpoint.includes('placeholder') || rawEndpoint.length < 10) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'IDRIVE_E2_STORAGE1_ENDPOINT secret is not configured correctly. Please go to Cloud > Secrets and set a valid iDrive E2 endpoint (e.g., s6k7.la12.idrivee2-32.com)',
+          debug: {
+            hasValue: !!rawEndpoint,
+            valueLength: rawEndpoint?.length || 0,
+            startsWithPlaceholder: rawEndpoint?.includes('placeholder') || false,
+          }
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400,
+        }
+      );
+    }
+
     const endpoint = rawEndpoint?.trim().replace(/^https?:\/\//, '').replace(/\/+$/, '');
 
     const accessKeyId = storage === 'storage1'
