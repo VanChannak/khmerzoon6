@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.upload-to-r2]
 verify_jwt = false
+
+[functions.upload-r2]
+verify_jwt = false
