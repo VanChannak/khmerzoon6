@@ -66,7 +66,10 @@ export const ProfileImageUpload = ({ type, currentImage, onUploadSuccess }: Prof
       });
 
       if (error) throw error;
-      if (!data?.success) throw new Error(data?.error || 'Upload failed');
+      if (!data?.success) {
+        console.error('Upload response:', data);
+        throw new Error(data?.error || 'Upload failed');
+      }
 
       const publicUrl = data.url;
 
@@ -86,7 +89,15 @@ export const ProfileImageUpload = ({ type, currentImage, onUploadSuccess }: Prof
       toast.success(`${type === 'profile' ? 'Profile' : 'Cover'} image updated successfully`);
     } catch (error: any) {
       console.error('Upload error:', error);
-      toast.error(error?.message || 'Upload failed. Please try again.');
+      const errorMsg = error?.message || 'Upload failed. Please try again.';
+      // Show more user-friendly message
+      if (errorMsg.includes('credentials') || errorMsg.includes('Storage')) {
+        toast.error('Storage service not configured properly. Please contact support.');
+      } else if (errorMsg.includes('AccessDenied') || errorMsg.includes('NoSuchBucket')) {
+        toast.error('Storage bucket not found or access denied. Please contact support.');
+      } else {
+        toast.error(errorMsg);
+      }
     } finally {
       setUploading(false);
     }

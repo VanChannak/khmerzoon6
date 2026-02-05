@@ -3,7 +3,7 @@ import { S3Client, PutObjectCommand } from 'npm:@aws-sdk/client-s3';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
 interface UploadRequest {
@@ -76,6 +76,8 @@ serve(async (req) => {
     await s3Client.send(command);
 
     const publicUrl = `https://${endpoint}/${bucket}/${fileName}`;
+    
+    console.log('Upload successful:', { bucket, fileName, publicUrl });
 
     return new Response(
       JSON.stringify({ 
@@ -89,12 +91,14 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error('Upload error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('Upload error:', errorMessage, error);
+    
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: errorMessage 
+        error: errorMessage,
+        details: error instanceof Error ? error.stack : undefined,
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
