@@ -56,13 +56,12 @@ export const ProfileImageUpload = ({ type, currentImage, onUploadSuccess }: Prof
       const fileName = `${user.id}/${type}-${timestamp}.${fileExt}`;
       
       // Upload to iDrive E2 via edge function
-      const { data, error } = await supabase.functions.invoke('upload-to-idrive', {
+      const { data, error } = await supabase.functions.invoke('upload-r2', {
         body: {
           fileName,
           fileData: base64Data,
           bucket: 'user-profiles',
-          contentType: selectedFile.type,
-          storage: 'r2'
+          contentType: selectedFile.type
         }
       });
 
