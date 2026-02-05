@@ -44,35 +44,25 @@ export const ProfileImageUpload = ({ type, currentImage, onUploadSuccess }: Prof
     try {
       setUploading(true);
 
-      // Convert file to base64 for iDrive E2 upload
-      const arrayBuffer = await selectedFile.arrayBuffer();
-      const base64Data = btoa(
-        new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
-      );
-
-      // Generate unique filename for iDrive E2
+      // Generate unique filename
       const fileExt = selectedFile.name.split('.').pop();
       const timestamp = Date.now();
-      const fileName = `${user.id}/${type}-${timestamp}.${fileExt}`;
-      
-      // Upload to iDrive E2 via edge function
-      const { data, error } = await supabase.functions.invoke('upload-to-idrive', {
-        body: {
-          fileName,
-          fileData: base64Data,
-          bucket: 'user-profiles',
-          contentType: selectedFile.type,
-          storage: 'storage1'
-        }
-      });
+      const filePath = `${user.id}/${type}-${timestamp}.${fileExt}`;
 
-      if (error) throw error;
-      if (!data?.success) {
-        console.error('Upload response:', data);
-        throw new Error(data?.error || 'Upload failed');
-      }
+      // Upload to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('user-profiles')
+        .upload(filePath, selectedFile, {
+          cacheControl: '3600',
+          upsert: true
+        });
 
-      const publicUrl = data.url;
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('user-profiles')
+        .getPublicUrl(filePath);
 
       // Update profile in database
       const column = type === 'profile' ? 'profile_image' : 'cover_image';
