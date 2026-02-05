@@ -44,27 +44,35 @@ export const ProfileImageUpload = ({ type, currentImage, onUploadSuccess }: Prof
     try {
       setUploading(true);
 
-      // Generate unique filename for Supabase Storage
+      // Convert file to base64 for iDrive E2 upload
+      const arrayBuffer = await selectedFile.arrayBuffer();
+      const base64Data = btoa(
+        new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
+      );
+
+      // Generate unique filename for iDrive E2
       const fileExt = selectedFile.name.split('.').pop();
       const timestamp = Date.now();
-      const filePath = `${user.id}/${type}-${timestamp}.${fileExt}`;
+      const fileName = `${user.id}/${type}-${timestamp}.${fileExt}`;
       
-      // Upload to Supabase Storage
-      const { data, error } = await supabase.storage
-        .from('user-profiles')
-        .upload(filePath, selectedFile, {
-          cacheControl: '3600',
-          upsert: true
-        });
+      // Upload to iDrive E2 via edge function
+      const { data, error } = await supabase.functions.invoke('upload-to-idrive', {
+        body: {
+          fileName,
+          fileData: base64Data,
+          bucket: 'user-profiles',
+          contentType: selectedFile.type,
+          storage: 'storage1'
+        }
+      });
 
       if (error) throw error;
+      if (!data?.success) {
+        console.error('Upload response:', data);
+        throw new Error(data?.error || 'Upload failed');
+      }
 
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from('user-profiles')
-        .getPublicUrl(filePath);
-
-      const publicUrl = urlData.publicUrl;
+      const publicUrl = data.url;
 
       // Update profile in database
       const column = type === 'profile' ? 'profile_image' : 'cover_image';
@@ -82,8 +90,8 @@ export const ProfileImageUpload = ({ type, currentImage, onUploadSuccess }: Prof
       toast.success(`${type === 'profile' ? 'Profile' : 'Cover'} image updated successfully`);
     } catch (error: any) {
       console.error('Upload error:', error);
-      if (error?.message?.includes('Bucket not found')) {
-        toast.error('Storage bucket not configured. Please create the user-profiles bucket.');
+      if (error?.message?.includes('placeholder')) {
+        toast.error('iDrive E2 endpoint not configured. Please update the IDRIVE_E2_STORAGE1_ENDPOINT secret.');
       } else {
         toast.error(error?.message || 'Upload failed. Please try again.');
       }
