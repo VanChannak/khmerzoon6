@@ -3,6 +3,9 @@ project_id = "eoidzprqsvimgtwegowv"
 [functions.translate-text]
 verify_jwt = false
 
+[functions.upload-to-idrive]
+verify_jwt = false
+
 [functions.upload-to-r2]
 verify_jwt = false
 
