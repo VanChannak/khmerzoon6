@@ -1,7 +1,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { S3Client, PutObjectCommand } from 'npm:@aws-sdk/client-s3';
 
-// Force redeploy to pick up latest secrets - v2
+// Force redeploy to pick up latest secrets - v3
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -37,16 +37,18 @@ serve(async (req) => {
       endpointLength: rawEndpoint?.length || 0,
     });
 
-    // Check if endpoint is a placeholder or invalid
-    if (!rawEndpoint || rawEndpoint.includes('placeholder') || rawEndpoint.length < 10) {
+    // Check if endpoint is a placeholder or invalid - case insensitive check
+    const lowerEndpoint = rawEndpoint?.toLowerCase() || '';
+    if (!rawEndpoint || lowerEndpoint.includes('placeholder') || rawEndpoint.length < 10 || !rawEndpoint.includes('.')) {
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'IDRIVE_E2_STORAGE1_ENDPOINT secret is not configured correctly. Please go to Cloud > Secrets and set a valid iDrive E2 endpoint (e.g., s6k7.la12.idrivee2-32.com)',
+          error: `IDRIVE_E2_STORAGE1_ENDPOINT is invalid. Current value starts with: "${rawEndpoint?.substring(0, 20) || 'EMPTY'}". Please set a valid iDrive E2 endpoint like: s6k7.la12.idrivee2-32.com`,
           debug: {
             hasValue: !!rawEndpoint,
             valueLength: rawEndpoint?.length || 0,
-            startsWithPlaceholder: rawEndpoint?.includes('placeholder') || false,
+            startsWithPlaceholder: lowerEndpoint.includes('placeholder'),
+            firstChars: rawEndpoint?.substring(0, 20) || 'EMPTY',
           }
         }),
         {
